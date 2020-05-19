@@ -1,7 +1,7 @@
 # OpenAssets-BlockExplorer
 Este é um explorador para obter o volume de distribuição de simples openassets.
 
-##Como usar
+## Como usar
 
 1 Configure bitcoind.
 2 Defina blocknotify no bitcoin.conf para executar onBlocknotify.sh
@@ -11,7 +11,7 @@ Este é um explorador para obter o volume de distribuição de simples openasset
 
 Sempre que um novo bloco for aprovado, um log será gravado no block_log
 
-###Ao rastrear manualmente
+### Ao rastrear manualmente
 
 python crawl.py <primeiro bloco a pesquisar>
 
