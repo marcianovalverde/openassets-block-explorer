@@ -1,17 +1,20 @@
 # OpenAssets-BlockExplorer
-簡易的なopenassetsの流通量を取得するエクスプローラーです。
+Este é um explorador para obter o volume de distribuição de simples openassets.
 
-## 使い方
-1. bitcoindをセットアップします。
-1. bitcoin.confのblocknotifyにonBlocknotify.shを実行するように設定します
-1. bitcoin.confのwalletnotifyにonWalletnotify.shを実行するように設定します
-1. onBlocknotify.shとonWalletnotify.shのROOTDIRの値を変更します
-1. config.iniを作成して必要情報を入力します
-1. 後は新しいブロックが承認されるたびにblock_logにログが書き込まれます
+##Como usar
 
-### 手動でクロールする場合
-`python crawl.py <最初に検索するブロック>`
+1 Configure bitcoind.
+2 Defina blocknotify no bitcoin.conf para executar onBlocknotify.sh
+3 Defina walletnotify no bitcoin.conf para executar onWalletnotify.sh
+4 Altere o valor de ROOTDIR em onBlocknotify.sh e onWalletnotify.sh
+5 Crie config.ini e insira as informações necessárias
 
-<最初に検索するブロック>が空の場合はgenesis blockになります。
+Sempre que um novo bloco for aprovado, um log será gravado no block_log
 
-config.iniの["crawl"]["nextblockhash"]に必要情報を入力してください
+###Ao rastrear manualmente
+
+python crawl.py <primeiro bloco a pesquisar>
+
+Se o <primeiro bloco a pesquisar> estiver vazio, é um bloco de gênese.
+
+Digite as informações necessárias em ["crawl"] ["nextblockhash"] do config.ini

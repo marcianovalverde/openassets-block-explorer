@@ -13,7 +13,7 @@ isTestnet = False
 
 def getAddressFrom(conn, txrawdata):
     vin = txrawdata["vin"]
-    # マイニング時のトランザクションを考慮した方が良い(in future)
+    # Considere transacoes durante a mineracao (no futuro)
     txin = vin[0]
     txid = txin["txid"]
     vout = txin["vout"]
@@ -64,12 +64,12 @@ def parseTx(conn, txid):
                                                    amount)
             isIssuranceTx = True if block["txid"] is issueTxid else False
             print("txid: {0}".format(block["txid"]))
-            print("出力{0}:".format(i))
-            print("送信元: %s" % addressFrom)
-            print("送信先: {0}".format(addresses))
-            print("アセットID: {0}".format(assetId))
-            print("送金量: {0}".format(amount))
-            print("時刻: {0}".format(
+            print("resultado{0}:".format(i))
+            print("Remetente: %s" % addressFrom)
+            print("Destino: {0}".format(addresses))
+            print("AssetID: {0}".format(assetId))
+            print("Valor da remessa: {0}".format(amount))
+            print("Hora: {0}".format(
                 datetime.datetime.fromtimestamp(int(block["time"]))))
             print("")
             table = config["db"]["tablename"]
@@ -78,10 +78,10 @@ def parseTx(conn, txid):
                             assetId, i, amount, issueTxid, block["time"], "1"
                             if isIssuranceTx else "0"))
         except Exception as e:
-            print('== エラー内容 ==')
+            print('== ERRO ==')
             print('type:' + str(type(e)))
             print('args:' + str(e.args))
-            print('e自身:' + str(e))
+            print('Auto:' + str(e))
 
     dbconn.commit()
     c.close()
@@ -115,19 +115,19 @@ def hasMarkerOutput(vout):
     return hasMarkerOutput, marker_output_index, num, payload
 
 
-# 指定したtxのvoutの情報を取得する
+#Obter informacoes sobre o vout do tx especificado
 def getTransactionAssetAmount(conn, txid, index):
     # print("txid: " + txid)
     # print("vout: " + str(index))
     tx = conn.getrawtransaction(txid, 1)
     vout = tx["vout"]
-    # 色付けされてるかを確認
+    # Verifique se é token
     hasMO, marker_output_index, num, payload = hasMarkerOutput(vout)
     if not hasMO:
         return False, 0, tx
     # print(len(vout))
     # print(marker_output_index)
-    # 指定したvoutのasset量を取得する
+    # Obter o valor do ativo do vout especificado
     for i in range(len(vout)):
         if i is marker_output_index:
             continue
@@ -135,11 +135,11 @@ def getTransactionAssetAmount(conn, txid, index):
         if vout[i]["n"] is index:
             return True, amount, tx
 
-    print("指定されたvoutが見つかりませんでした")
+    print("O vout especificado nao foi encontrado")
     return False, 0, tx
 
 
-# assetIdを検索する
+# Procure por assetId
 def searchIssuranceTx(conn, dbconn, voutIndex, txData, txamount):
     vin = txData["vin"]
     isAllColoredTx = True
@@ -151,7 +151,7 @@ def searchIssuranceTx(conn, dbconn, voutIndex, txData, txamount):
         c.execute(sql, (txid, vout))
         allList = c.fetchall()
         # print(allList)
-        # ショートカット
+        # Atalho
         if len(allList) != 0:
             for record in allList:
                 if len(record) < 2:
@@ -167,17 +167,17 @@ def searchIssuranceTx(conn, dbconn, voutIndex, txData, txamount):
         else:
             isColored, amount, inTxData = getTransactionAssetAmount(
                 conn, txid, vout)
-            # もしvinの中にvoutで使われた以上のassetがある場合
+            # Se houver mais ativos em vin do que em vout
             if isColored and amount >= txamount:
-                # そのトランザクションを見る
+                # Ver a transacao
                 assetId, issueTxid = searchIssuranceTx(conn, dbconn, vout,
                                                        inTxData, amount)
                 isAllColoredTx = False
                 if assetId is not None:
                     return assetId, issueTxid
-    # もしvinの中に対応するtxがない or 色付けされたものがない時
+    # Se não houver tx correspondente em vin ou se não houver token
     if isAllColoredTx:
-        # このトランザクションは発行トランザクション
+        # Esta transacao eh uma transacao de emissao
         print("issue tx: " + txData["txid"])
         o = txData["vout"][voutIndex]
         # print(o)
@@ -186,7 +186,7 @@ def searchIssuranceTx(conn, dbconn, voutIndex, txData, txamount):
         scriptPubKey = o["scriptPubKey"]
         scriptpubkeyHex = scriptPubKey["hex"]
         assetId = oautil.getAssetId(scriptpubkeyHex, isTestnet)
-        # 過去にすでに発行されていたならそのアセットIDを使う
+        # Use o ID do ativo se ele ja tiver sido emitido no passado
         addressFrom = getAddressFrom(conn, txData)
         sql = 'select asset_id, txid from ' + config["db"]["tablename"] + ' where `from` = \'%s\' and `isIssurance` = 1 order by `timestamp`' % addressFrom[0]
         c.execute(sql)
