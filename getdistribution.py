@@ -73,10 +73,8 @@ def parseTx(conn, txid):
                 datetime.datetime.fromtimestamp(int(block["time"]))))
             print("")
             table = config["db"]["tablename"]
-            sql = 'insert into ' + table + ' values (0, %s, %s, %s, %s, %s, %s, %s, %s, %s)'
-            c.execute(sql, (block["txid"], addresses[0], addressFrom[0],
-                            assetId, i, amount, issueTxid, block["time"], "1"
-                            if isIssuranceTx else "0"))
+            sql = 'insert into ' + table + '(txid, addresses, addressfrom, asset_Id, i, amount, issueTxid, timestamp, isIssurance, vout) values (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s)'
+            c.execute(sql, (block["txid"], addresses[0], addressFrom[0], assetId, i, amount, issueTxid, block["time"], "1" if isIssuranceTx else "0", marker_output_index))
         except Exception as e:
             print('== ERRO ==')
             print('type:' + str(type(e)))
@@ -107,7 +105,7 @@ def hasMarkerOutput(vout):
     for i, o in enumerate(vout):
         if "4f41" == o["scriptPubKey"]["hex"][4:8]:
             marker_output_index = i
-            # print("OA Version:" + o["scriptPubKey"]["hex"][8:12])
+            #print("OA Version:" + o["scriptPubKey"]["hex"][8:12])
             payload = o["scriptPubKey"]["hex"][12:]
             num, payload = oautil.leb128(payload)
             hasMarkerOutput = True
@@ -188,7 +186,7 @@ def searchIssuranceTx(conn, dbconn, voutIndex, txData, txamount):
         assetId = oautil.getAssetId(scriptpubkeyHex, isTestnet)
         # Use o ID do ativo se ele ja tiver sido emitido no passado
         addressFrom = getAddressFrom(conn, txData)
-        sql = 'select asset_id, txid from ' + config["db"]["tablename"] + ' where `from` = \'%s\' and `isIssurance` = 1 order by `timestamp`' % addressFrom[0]
+        sql = 'select asset_id, txid from ' + config["db"]["tablename"] + ' where `addressfrom` = \'%s\' and `isIssurance` = 1 order by `timestamp`' % addressFrom[0]
         c.execute(sql)
         allList = c.fetchall()
         if len(allList) != 0:
@@ -201,6 +199,6 @@ def searchIssuranceTx(conn, dbconn, voutIndex, txData, txamount):
 if __name__ == "__main__":
     blockHash = sys.argv[1]
     config.read("config.ini")
-    isTestnet = scriptpubkeyHex, if "rpcsetting" in config and "testnet" in config["rpcsetting"] and config["rpcsetting"]["testnet"] is "1"
+    #isTestnet = scriptpubkeyHex, if "rpcsetting" in config and "testnet" in config["rpcsetting"] and config["rpcsetting"]["testnet"] is "1"
     if len(blockHash) != 0:
         parseBlock(blockHash)

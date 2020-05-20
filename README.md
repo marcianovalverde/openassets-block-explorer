@@ -1,6 +1,11 @@
 # OpenAssets-BlockExplorer
 Este é um explorador para obter o volume de distribuição de simples openassets.
 
+Instale a dependencia:
+
+pip install mysqlclient
+pip install python-bitcoinrpc
+
 ## Como usar
 
 - Configure bitcoind.
